@@ -1,71 +1,76 @@
-# screesaver — Mac lockscreen animation collection
+# screesaver
 
-A fullscreen, animated **lockscreen experience for Mac**, built as a
-zero-dependency web page. Open `index.html` in a browser and go fullscreen —
-the background fades in first, then the character slides in, then click (or
-press any key) to unlock.
+> ## Status: 🟢 Completed
+>
+> <progress value="95" max="100"></progress>
+> **Progress: 95%** — The full lockscreen sequence, all 4 entrance variants, unlock/re-lock flow, and reduced-motion support all work; remaining 5% is extra variants and polish.
 
-> Note: macOS doesn't allow replacing the real lock screen, so this is a
-> fullscreen simulation — convincing enough to demo, record, or project.
+<p align="center">
+  <img src="banner.webp" alt="screesaver banner" width="100%" />
+</p>
 
-## The sequence
+## What it is
 
-1. **Background** fades in alone (1400ms ease-out, slow 1.08→1 settle) —
-   one focal point at a time.
-2. **Character** enters with the selected animation (~650ms in), while the
-   background dims slightly to hand it the focus.
-3. **Clock + date** fade up, then the unlock hint — staggered 40ms apart.
-4. **Idle**: the character gently floats; moving the mouse adds lerped
-   parallax between background and character.
-5. **Unlock**: click / any key → character and chrome exit fast (ease-in,
-   ≤300ms), background blurs and pushes in, mock desktop fades up.
+A fullscreen **Mac lockscreen animation collection** built as a zero-dependency web page — one `index.html`, one CSS file, one JS file. The background fades in first, then a character cutout enters through one of **4 animation variants** (Drift In, Rise, Materialize, Arc), the clock and date stagger in, and clicking or pressing any key "unlocks" into a mock desktop. It's a fullscreen simulation (macOS won't let a web page replace the real lock screen) — convincing enough to demo, record, or project.
 
-## The collection — 4 animations
+## What works (verified)
 
-| # | Name | What it shows off |
-|---|------|-------------------|
-| 1 | **Drift In** | Anticipation pull-back, then a spring overshoot settle |
-| 2 | **Rise** | Dips first (anticipation), lands with a subtle squash |
-| 3 | **Materialize** | Blur-to-sharp focus pull, quiet staging |
-| 4 | **Arc** | Curved entry path with rotation — arcs beat straight lines |
+- ✅ Background fade-in with slow settle — `index.html` + `css/style.css`, served locally, all assets return 200
+- ✅ 4 character entrance variants — verified `VARIANTS = ["drift","rise","materialize","arc"]` in `js/app.js`, variant buttons in the pill bar
+- ✅ Clock + date stagger in — `#clock` / `#time` / `#date` elements wired in `js/app.js`
+- ✅ Unlock flow — click or any key exits the stage (≤300ms ease-in) into the mock desktop; verified handler in `app.js`
+- ✅ Re-lock — `Escape` (or the "Lock again" pill) returns to the lockscreen; verified `e.key === "Escape"` → `lock()`
+- ✅ Keys `1–4` switch variants, `R` replays — verified key handlers in `js/app.js`
+- ✅ Idle float + mouse parallax — present in `app.js`/`style.css`
+- ✅ `prefers-reduced-motion` respected — everything jumps to final state
+- ✅ No TODOs, FIXMEs, or stub code anywhere in the repo
 
-Switch with the pill bar at the bottom, or keys `1–4`. `R` replays,
-`Esc` re-locks from the desktop.
+## Tech stack
 
-## Motion principles
+| Layer | Tech |
+|---|---|
+| Markup | HTML5 (`index.html`) |
+| Styling / animation | Vanilla CSS keyframes + cubic-bezier easings (`css/style.css`, 341 lines) |
+| Logic | Vanilla JS, no frameworks (`js/app.js`, 146 lines) |
+| Assets | PNG cutouts (`assets/background.png`, `assets/person.png`) |
+| Motion method | Disney's 12 principles of animation (anticipation, arcs, squash, stagger, slow in/out) |
 
-Built against the `12-principles-of-animation` skill
-(`~/workspace/skills/12-principles-of-animation/SKILL.md`):
+## How to run
 
-- **Easing** — entrances ease-out (never linear); exits ease-in.
-- **Physics** — overshoot via spring-like bezier, squash kept to 0.95–1.05,
-  stagger capped at 50ms, `:active` scale on every control.
-- **Staging** — sequenced focal points, dimmed background behind the
-  character, explicit z-index layers.
-- **Timing** — user-initiated motion completes ≤300ms; entrances share one
-  duration family.
-- Disney mapping: anticipation (pull-back/dip), arcs, secondary action
-  (float + parallax), exaggeration (overshoot), slow in/out.
+```bash
+cd screesaver
+python3 -m http.server 8123
+# → http://localhost:8123  (then fullscreen the browser: ⌃⌘F on Mac)
+```
 
-`prefers-reduced-motion` is respected — everything jumps to its final state.
+Easiest alternative: double-click `index.html` and fullscreen the browser. Tested: `python3 -m http.server` serves `index.html`, `css/style.css`, `js/app.js`, and both PNG assets — all return HTTP 200.
 
-## Files
+**Controls:** click / any key = unlock · `1–4` = switch variant · `R` = replay · `Esc` = re-lock.
+
+## Screenshots
+
+No screenshots are checked into the repo — the banner above is the visual. (It's a fullscreen animation piece; the best "screenshot" is opening `index.html` and pressing `1–4`.)
+
+## What you can add more
+
+- [ ] More entrance variants (e.g. glitch-in, slide-from-edge, particle dissolve) — the `VARIANTS` array + CSS class pattern makes adding one trivial
+- [ ] A real photo/upload slot so anyone can drop in their own character cutout
+- [ ] Sound design — subtle whoosh on entrance, click on unlock (WebAudio, no assets needed)
+- [ ] Time-of-day backgrounds — swap `background.png` based on the actual clock
+- [ ] Record-mode — a query param (`?autoplay&variant=arc`) for clean screen recordings
+
+## Project structure
 
 ```
 screesaver/
-├── index.html          # stage, clock, variant bar, mock desktop
-├── css/style.css       # all keyframes, easings, layers
-├── js/app.js           # sequencing, clock, parallax, unlock/lock
-└── assets/
-    ├── background.png  # the classroom backdrop
-    └── person.png      # the character (alpha cutout)
+├── index.html          # lockscreen stage, clock, variant bar, mock desktop
+├── css/style.css       # all keyframes, easings, z-index layers (341 lines)
+├── js/app.js           # sequencing, clock, parallax, unlock/lock (146 lines)
+├── assets/
+│   ├── background.png  # the classroom backdrop
+│   └── person.png      # the character (alpha cutout)
+└── banner.webp         # project banner
 ```
 
-## Try it
-
-```bash
-# easiest: double-click index.html, then fullscreen the browser (⌃⌘F on Mac)
-# or serve it:
-python3 -m http.server 8000
-# → http://localhost:8000
-```
+---
+*README written after code audit on 2026-10-08.*
